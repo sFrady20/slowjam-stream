@@ -9,5 +9,8 @@
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@react-three/cannon": "^6.6.0"
+  }
 }

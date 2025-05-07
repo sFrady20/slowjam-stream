@@ -1,7 +1,8 @@
 import { env } from "./env";
-import { RefreshingAuthProvider } from "@twurple/auth";
-import { Bot, createBotCommand } from "@twurple/easy-bot";
+import { AppTokenAuthProvider, RefreshingAuthProvider } from "@twurple/auth";
 import defaultToken from "./tokens.json";
+import { ChatClient } from "@twurple/chat";
+import { Bot, createBotCommand } from "@twurple/easy-bot";
 // import { promises as fs } from "fs";
 // import { join } from "path";
 
@@ -13,7 +14,6 @@ export const startBot = async () => {
     clientId: env.TWITCH_CLIENT_ID!,
     clientSecret: env.TWITCH_CLIENT_SECRET!,
   });
-
   // authProvider.onRefresh(
   //   async (_, newTokenData) =>
   //     await fs.writeFile(
@@ -22,22 +22,26 @@ export const startBot = async () => {
   //       "utf-8",
   //     ),
   // );
-
   await authProvider.addUserForToken(defaultToken, ["chat"]);
+
+  // const chatClient = new ChatClient({
+  //   authProvider: authProvider,
+  //   channels: [env.VITE_PUBLIC_TWITCH_CHANNEL!],
+  // });
+  // chatClient.connect();
 
   const bot = new Bot({
     authProvider,
     channels: [env.VITE_PUBLIC_TWITCH_CHANNEL],
     commands: [
-      createBotCommand("dice", (_, { reply }) => {
-        const diceRoll = Math.floor(Math.random() * 6) + 1;
-        reply(`You rolled a ${diceRoll}`);
-      }),
-      createBotCommand("slap", (params, { userName, say }) => {
-        say(
-          `${userName} slaps ${params.join(" ")} around a bit with a large trout`,
-        );
-      }),
+      createBotCommand(
+        "dice",
+        (_, { reply }) => {
+          const diceRoll = Math.floor(Math.random() * 6) + 1;
+          reply(`You rolled a ${diceRoll}`);
+        },
+        { userCooldown: 10 },
+      ),
     ],
   });
 
