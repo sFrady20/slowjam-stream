@@ -1,15 +1,7 @@
-# twitch-games
+## Slowjam Steve's Stream Source
 
-To install dependencies:
+Gonna add all kinda cool stuff here for my stream.
 
-```bash
-bun install
-```
+Run it then set your obs browser source to localhost:5173/#main (will probably add different pages for different things later)
 
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.2.5. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+also u gotta start obs with the --enable-media-stream flag

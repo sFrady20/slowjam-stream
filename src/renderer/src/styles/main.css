@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@import "earthling-ui";
+@import "earthling-ui/theme/dark";
+
+@layer base {
+  :root {
+    @apply theme-dark;
+
+    background: transparent;
+    font-family: "DIN", sans-serif;
+
+    --slowjam-color: #c73500;
+  }
+}
