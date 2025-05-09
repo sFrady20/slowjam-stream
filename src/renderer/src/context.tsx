@@ -22,7 +22,7 @@ const AppContext = createContext(makeAppStore());
 const Loader = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex flex-1 flex-col items-center justify-center">
-      <div className="flex flex-row items-center gap-[2vw]">
+      <div className="flex flex-row items-center gap-4">
         <i className="icon-[svg-spinners--ring-resize]" />
         <div>{children}</div>
       </div>

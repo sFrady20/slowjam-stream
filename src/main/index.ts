@@ -1,4 +1,5 @@
 import { startBot } from "./lib/bot";
+import { RekordBox, TrackData } from "./lib/now-playing";
 import Main from "./main";
 import { OBSWebSocket } from "obs-websocket-js";
 
@@ -11,6 +12,7 @@ export type MainSettings = {};
 export type MainState = {
   isWebcamEnabled: boolean;
   holdText: string;
+  currentTrack?: TrackData;
 };
 
 const mainActions = {
@@ -59,10 +61,19 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
     defaultSettings: {},
     defaultState: {
       isWebcamEnabled: false,
-      holdText: "Stream Starting",
+      holdText: "STARTING SOON",
     },
     actions: mainActions,
     onReady: () => {
+      const rekordbox = new RekordBox({
+        onTrackUpdate: (data) => {
+          main.state.setState((x) => {
+            x.currentTrack = data;
+          });
+        },
+      });
+      rekordbox.watch();
+
       obs.connect("ws://127.0.0.1:4455").then(() => {
         console.log("connected to obs");
 

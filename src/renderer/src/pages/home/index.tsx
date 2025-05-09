@@ -1,4 +1,5 @@
 import { PageBackground } from "@/components/page-background";
+import { useApp } from "@/context";
 import { useEffect, useState } from "react";
 import Webcam from "react-webcam";
 
@@ -31,7 +32,7 @@ export function HomePage() {
       <PageBackground />
       {faceCam && (
         <Webcam
-          className="absolute top-10 left-10 h-[92vh] w-[70vw] rounded-xl object-cover shadow-[0px_0px_100px_-20px_black]"
+          className="absolute top-15 left-10 h-[90vh] w-[70vw] rounded-xl object-cover shadow-[0px_0px_100px_-20px_black]"
           videoConstraints={{ deviceId: faceCam.deviceId }}
         />
       )}
@@ -41,6 +42,23 @@ export function HomePage() {
           videoConstraints={{ deviceId: deckCam.deviceId }}
         />
       )}
+      <NowPlaying />
+    </div>
+  );
+}
+
+function NowPlaying() {
+  const app = useApp();
+
+  const currentTrack = app((x) => x.state.currentTrack);
+
+  if (!currentTrack) return null;
+
+  return (
+    <div className="bg-background/70 absolute top-10 right-10 flex w-[35vw] flex-col rounded-xl p-6 shadow-[0px_0px_100px_-20px_black] backdrop-blur-lg">
+      <div className="font-[DIN_Bold] text-[32px]">Now playing</div>
+      <div className="text-[40px]">{currentTrack.title}</div>
+      <div className="text-[32px]">{currentTrack.artist}</div>
     </div>
   );
 }
