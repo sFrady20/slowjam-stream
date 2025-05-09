@@ -1,11 +1,17 @@
 import { startBot } from "./lib/bot";
 import Main from "./main";
+import { OBSWebSocket } from "obs-websocket-js";
+
+const obs = new OBSWebSocket();
 
 export type MainConfig = {
   styles?: Record<string, string>;
 };
 export type MainSettings = {};
-export type MainState = {};
+export type MainState = {
+  isWebcamEnabled: boolean;
+  holdText: string;
+};
 
 const mainActions = {
   async requestConfig() {
@@ -25,6 +31,17 @@ const mainActions = {
   async reset() {
     main.state.setState(main.defaultState);
   },
+
+  async setScene(sceneName: string) {
+    await obs.call("SetCurrentProgramScene", { sceneName });
+  },
+
+  async applyHold(holdText: string) {
+    main.state.setState((x) => {
+      x.holdText = holdText;
+    });
+    await obs.call("SetCurrentProgramScene", { sceneName: "Hold" });
+  },
 } as const;
 
 //called from client to main
@@ -40,20 +57,27 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
   {
     defaultConfig: {},
     defaultSettings: {},
-    defaultState: {},
+    defaultState: {
+      isWebcamEnabled: false,
+      holdText: "Stream Starting",
+    },
     actions: mainActions,
     onReady: () => {
-      //subscribe to changes
-      main.settings.subscribe((x) => {
-        main.io.emit("updateSettings", x);
-      });
+      obs.connect("ws://127.0.0.1:4455").then(() => {
+        console.log("connected to obs");
 
-      main.state.subscribe((x) => {
-        main.io.emit("updateState", x);
-      });
+        //subscribe to changes
+        main.settings.subscribe((x) => {
+          main.io.emit("updateSettings", x);
+        });
 
-      //start bot
-      startBot();
+        main.state.subscribe((x) => {
+          main.io.emit("updateState", x);
+        });
+
+        //start bot
+        startBot();
+      });
     },
   },
 );

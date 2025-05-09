@@ -11,4 +11,10 @@
 
     --slowjam-color: #c73500;
   }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 }
