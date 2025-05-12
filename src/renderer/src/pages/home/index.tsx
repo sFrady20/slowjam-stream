@@ -1,7 +1,7 @@
 import { PageBackground } from "@/components/page-background";
 import { useApp } from "@/context";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 
 export function HomePage() {
@@ -48,6 +48,7 @@ export function HomePage() {
           </div>
         )}
       </div>
+      <Visualizer />
     </div>
   );
 }
@@ -95,5 +96,49 @@ function Activity() {
         </div>
       ))}
     </div>
+  );
+}
+
+export default function Visualizer() {
+  const app = useApp();
+
+  const videoUrl = app((x) => x.state.visualizerVideoUrl);
+
+  return (
+    <AnimatePresence mode="popLayout">
+      {videoUrl && <BpmVideo key={videoUrl} videoUrl={videoUrl} />}
+    </AnimatePresence>
+  );
+}
+
+export function BpmVideo({ videoUrl }: { videoUrl: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+
+  const app = useApp();
+
+  const bpm = app((x) => x.state.currentTrack?.bpm);
+  const opacity = app((x) => x.state.visualizerOpacity);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    ref.current.playbackRate = bpm ? Math.pow(bpm / 128, 1.2) : 1;
+    console.log("playbackRate", ref.current.playbackRate);
+  }, [bpm]);
+
+  return (
+    <>
+      <motion.video
+        ref={ref}
+        src={videoUrl}
+        initial={{ opacity: 0, scale: 1 }}
+        animate={{ opacity: opacity / 100, scale: 1 }}
+        exit={{ opacity: 0, scale: 10 }}
+        transition={{ duration: 1 }}
+        className="absolute top-0 left-0 h-full w-full object-cover mix-blend-screen"
+        muted
+        autoPlay
+        loop
+      />
+    </>
   );
 }

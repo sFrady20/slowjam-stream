@@ -3,8 +3,16 @@ import { startBot } from "./lib/bot";
 import { RekordBox, TrackData } from "./lib/now-playing";
 import Main from "./main";
 import { OBSWebSocket } from "obs-websocket-js";
+import pixabay from "pixabay-api";
+import { env } from "./lib/env";
 
 const obs = new OBSWebSocket();
+
+type VJLoop = {
+  id: number;
+  thumbnail: string;
+  video: string;
+};
 
 export type MainConfig = {
   styles?: Record<string, string>;
@@ -15,6 +23,9 @@ export type MainState = {
   holdText: string;
   currentTrack?: TrackData;
   streamData?: HelixStream;
+  vjLoops?: VJLoop[];
+  visualizerOpacity: number;
+  visualizerVideoUrl?: string;
   activity: { id: string; message: string; time: number }[];
 };
 
@@ -47,6 +58,13 @@ const mainActions = {
     });
     await obs.call("SetCurrentProgramScene", { sceneName: "Hold" });
   },
+
+  async updateVisualizer(videoUrl: string | undefined, opacity: number) {
+    main.state.setState((x) => {
+      x.visualizerOpacity = opacity;
+      x.visualizerVideoUrl = videoUrl;
+    });
+  },
 } as const;
 
 //called from client to main
@@ -65,10 +83,11 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
     defaultState: {
       isWebcamEnabled: false,
       holdText: "STARTING SOON",
+      visualizerOpacity: 0,
       activity: [],
     },
     actions: mainActions,
-    onReady: () => {
+    onReady: async () => {
       const rekordbox = new RekordBox({
         onTrackUpdate: (data) => {
           main.state.setState((x) => {
@@ -78,43 +97,65 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
       });
       rekordbox.watch();
 
-      obs.connect("ws://127.0.0.1:4455").then(() => {
-        console.log("connected to obs");
+      await obs.connect("ws://127.0.0.1:4455");
 
-        //subscribe to changes
-        main.settings.subscribe((x) => {
-          main.io.emit("updateSettings", x);
-        });
+      console.log("connected to obs");
 
-        main.state.subscribe((x) => {
-          main.io.emit("updateState", x);
-        });
-
-        //start bot
-        startBot({
-          onStreamData: (streamData) => {
-            main.state.setState((x) => {
-              x.streamData = streamData;
-            });
-          },
-          onFollow: (userName) => {
-            main.state.setState((x) => {
-              x.activity.push({
-                id: Math.random().toString(32).slice(7),
-                message: [
-                  `${userName} followed`,
-                  `${userName} just followed`,
-                  `${userName} is following`,
-                  `${userName} is now following`,
-                  `${userName} just joined`,
-                  `${userName} joined`,
-                ].toSorted((a, b) => Math.random() - 0.5)[0],
-                time: Date.now(),
-              });
-            });
-          },
-        });
+      //subscribe to changes
+      main.settings.subscribe((x) => {
+        main.io.emit("updateSettings", x);
       });
+
+      main.state.subscribe((x) => {
+        main.io.emit("updateState", x);
+      });
+
+      //start bot
+      startBot({
+        onStreamData: (streamData) => {
+          main.state.setState((x) => {
+            x.streamData = streamData;
+          });
+        },
+        onFollow: (userName) => {
+          main.state.setState((x) => {
+            x.activity.push({
+              id: Math.random().toString(32).slice(7),
+              message: [
+                `${userName} followed`,
+                `${userName} just followed`,
+                `${userName} is following`,
+                `${userName} is now following`,
+                `${userName} just joined`,
+                `${userName} joined`,
+              ].toSorted((a, b) => Math.random() - 0.5)[0],
+              time: Date.now(),
+            });
+          });
+        },
+      });
+
+      //get pixabay images
+      console.log("getting pixabay videos");
+      try {
+        const items: VJLoop[] = (
+          await pixabay.searchVideos(env.PIXABAY_API_KEY, "vj loops", {
+            per_page: 200,
+          })
+        ).hits.map(({ id, videos }) => ({
+          id,
+          thumbnail: (videos.medium as any).thumbnail as string,
+          video: videos.medium.url as any as string,
+        }));
+
+        console.log(`found ${items.length} vj loops`);
+
+        main.state.setState((x) => {
+          x.vjLoops = items;
+        });
+      } catch (e: any) {
+        console.error("error getting pixabay videos:", e.response.data);
+      }
     },
   },
 );
