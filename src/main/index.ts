@@ -1,3 +1,4 @@
+import { HelixStream } from "@twurple/api";
 import { startBot } from "./lib/bot";
 import { RekordBox, TrackData } from "./lib/now-playing";
 import Main from "./main";
@@ -13,6 +14,7 @@ export type MainState = {
   isWebcamEnabled: boolean;
   holdText: string;
   currentTrack?: TrackData;
+  streamData?: HelixStream;
   activity: { id: string; message: string; time: number }[];
 };
 
@@ -90,6 +92,11 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
 
         //start bot
         startBot({
+          onStreamData: (streamData) => {
+            main.state.setState((x) => {
+              x.streamData = streamData;
+            });
+          },
           onFollow: (userName) => {
             main.state.setState((x) => {
               x.activity.push({

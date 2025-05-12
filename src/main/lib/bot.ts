@@ -1,15 +1,14 @@
 import { env } from "./env";
 import { RefreshingAuthProvider } from "@twurple/auth";
 import defaultToken from "./tokens.json";
-import { ApiClient } from "@twurple/api";
+import { ApiClient, HelixStream } from "@twurple/api";
 import { EventSubWsListener } from "@twurple/eventsub-ws";
 // import { promises as fs } from "fs";
 // import { join } from "path";
 
 export const startBot = async (options?: {
   onFollow?: (userName: string) => void;
-  onViewCount?: (count: number) => void;
-  onTimeStart?: (time: number) => void;
+  onStreamData?: (stream: HelixStream) => void;
 }) => {
   console.log("starting bot");
   // const tokenData = JSON.parse(
@@ -36,13 +35,6 @@ export const startBot = async (options?: {
   const listener = new EventSubWsListener({
     apiClient,
   });
-
-  async function trackStream() {
-    const streams = await apiClient.streams.getStreams({
-      userId: env.VITE_PUBLIC_TWITCH_CHANNEL_ID,
-      type: "live",
-    });
-  }
 
   listener.onChannelFollow(
     env.VITE_PUBLIC_TWITCH_CHANNEL_ID,
@@ -81,4 +73,17 @@ export const startBot = async (options?: {
   );
 
   listener.start();
+
+  // track stream details
+  async function trackStream() {
+    const streams = await apiClient.streams.getStreams({
+      userId: env.VITE_PUBLIC_TWITCH_CHANNEL_ID,
+      type: "live",
+    });
+    options?.onStreamData?.(streams.data[0]);
+  }
+  trackStream();
+  setInterval(() => {
+    trackStream();
+  }, 60 * 1000);
 };

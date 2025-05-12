@@ -2,19 +2,33 @@ import { useApp } from "@/context";
 import { clientAction } from "@/services/socket";
 import { Button } from "earthling-ui/button";
 import { TextArea } from "earthling-ui/textarea";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function ControllerPage() {
   const app = useApp();
 
+  const streamData = app((x) => x.state.streamData);
+
   return (
-    <div className="bg-background flex flex-1 flex-col">
-      <div className="flex flex-row">
-        <Button>Scene</Button>
+    <div className="bg-background flex flex-1 flex-col gap-4 p-6">
+      {streamData && (
+        <div className="flex flex-col gap-2">
+          <div>Title: {streamData.title}</div>
+          <div>Viewers: {streamData.viewers}</div>
+        </div>
+      )}
+      <div className="flex flex-row gap-2">
+        <Button scheme={"secondary"} className="flex-1">
+          Scene
+        </Button>
+        <Button scheme={"secondary"} className="flex-1">
+          Games
+        </Button>
       </div>
-      <div className="flex flex-1 flex-col items-center justify-center gap-6">
+      <div className="flex flex-1 flex-col gap-6">
         <div>
           <Button
+            className="w-full"
             onClick={async () => {
               await clientAction("setScene", "Main");
             }}
@@ -22,7 +36,7 @@ export default function ControllerPage() {
             Return Home
           </Button>
         </div>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <ApplyHoldTool />
         </div>
       </div>
@@ -36,7 +50,7 @@ const ApplyHoldTool = function () {
   return (
     <>
       <TextArea
-        className="min-w-[300px] text-center"
+        className="w-full text-center"
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />

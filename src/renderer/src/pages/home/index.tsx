@@ -66,7 +66,7 @@ function NowPlaying() {
             initial={{ translateX: -32, opacity: 0, scale: 0.98 }}
             animate={{ translateX: 0, opacity: 1, scale: 1 }}
             exit={{ translateX: -32, opacity: 0, scale: 0.98 }}
-            className="bg-background/70 flex-col rounded-xl p-6 shadow-[0px_0px_100px_-20px_black] backdrop-blur-lg"
+            className="bg-background/70 flex-col rounded-xl p-6 shadow-[0px_0px_100px_-20px_black] backdrop-blur-lg text-shadow-[0px_0px_20px_var(--color-foreground)]"
           >
             <div className="font-[DIN_Bold] text-[32px]">Now playing</div>
             <div className="text-[40px]">{currentTrack.title}</div>
@@ -89,7 +89,7 @@ function Activity() {
           key={x.id}
           className="bg-background/70 inline-block rounded-xl px-2"
         >
-          <div className="text-right font-[DIN_Bold] text-[32px] text-(--slowjam-color) mix-blend-screen shadow-[0px_0px_100px_-20px_black] backdrop-blur-lg text-shadow-[0px_0px_20px_var(--slowjam-color)]">
+          <div className="text-foreground text-right font-[DIN_Bold] text-[32px] mix-blend-screen shadow-[0px_0px_100px_-20px_black] backdrop-blur-lg text-shadow-[0px_0px_13px_var(--color-foreground)]">
             {x.message}
           </div>
         </div>
