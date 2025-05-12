@@ -1,12 +1,17 @@
 import { env } from "./env";
-import { AppTokenAuthProvider, RefreshingAuthProvider } from "@twurple/auth";
+import { RefreshingAuthProvider } from "@twurple/auth";
 import defaultToken from "./tokens.json";
-import { ChatClient } from "@twurple/chat";
-import { Bot, createBotCommand } from "@twurple/easy-bot";
+import { ApiClient } from "@twurple/api";
+import { EventSubWsListener } from "@twurple/eventsub-ws";
 // import { promises as fs } from "fs";
 // import { join } from "path";
 
-export const startBot = async () => {
+export const startBot = async (options?: {
+  onFollow?: (userName: string) => void;
+  onViewCount?: (count: number) => void;
+  onTimeStart?: (time: number) => void;
+}) => {
+  console.log("starting bot");
   // const tokenData = JSON.parse(
   //   await fs.readFile(join(__dirname, "./tokens.json"), "utf-8"),
   // );
@@ -24,43 +29,56 @@ export const startBot = async () => {
   // );
   await authProvider.addUserForToken(defaultToken, ["chat"]);
 
-  // const chatClient = new ChatClient({
-  //   authProvider: authProvider,
-  //   channels: [env.VITE_PUBLIC_TWITCH_CHANNEL!],
-  // });
-  // chatClient.connect();
-
-  const bot = new Bot({
+  const apiClient = new ApiClient({
     authProvider,
-    channels: [env.VITE_PUBLIC_TWITCH_CHANNEL],
-    commands: [
-      createBotCommand(
-        "dice",
-        (_, { reply }) => {
-          const diceRoll = Math.floor(Math.random() * 6) + 1;
-          reply(`You rolled a ${diceRoll}`);
-        },
-        { userCooldown: 10 },
-      ),
-    ],
   });
 
-  bot.onSub(({ broadcasterName, userName }) => {
-    bot.say(
-      broadcasterName,
-      `Thanks to @${userName} for soobscribing to the channel!`,
-    );
+  const listener = new EventSubWsListener({
+    apiClient,
   });
-  bot.onResub(({ broadcasterName, userName, months }) => {
-    bot.say(
-      broadcasterName,
-      `Thanks to @${userName} for subscribing to the channel for a total of ${months} months!`,
-    );
-  });
-  bot.onSubGift(({ broadcasterName, gifterName, userName }) => {
-    bot.say(
-      broadcasterName,
-      `Thanks to @${gifterName} for gifting a subscription to @${userName}!`,
-    );
-  });
+
+  async function trackStream() {
+    const streams = await apiClient.streams.getStreams({
+      userId: env.VITE_PUBLIC_TWITCH_CHANNEL_ID,
+      type: "live",
+    });
+  }
+
+  listener.onChannelFollow(
+    env.VITE_PUBLIC_TWITCH_CHANNEL_ID,
+    env.VITE_PUBLIC_TWITCH_CHANNEL_ID,
+    async (e) => {
+      options?.onFollow?.(e.userDisplayName);
+    },
+  );
+
+  listener.onChannelChatMessage(
+    env.VITE_PUBLIC_TWITCH_CHANNEL_ID,
+    env.VITE_PUBLIC_TWITCH_CHANNEL_ID,
+    (e) => {
+      const message = e.messageText.trim();
+      if (message.startsWith("!")) {
+        const [command, ...args] = message.slice(1).split(/\s+/);
+
+        switch (command) {
+          case "dice":
+            apiClient.chat.sendChatMessageAsApp(
+              env.VITE_PUBLIC_TWITCH_CHANNEL_ID,
+              env.VITE_PUBLIC_TWITCH_CHANNEL_ID,
+              `You rolled a ${Math.floor(Math.random() * 6) + 1}`,
+            );
+            break;
+
+          case "test":
+            switch (args[0]) {
+              case "follow":
+                options?.onFollow?.("testyMcTestface");
+                break;
+            }
+        }
+      }
+    },
+  );
+
+  listener.start();
 };

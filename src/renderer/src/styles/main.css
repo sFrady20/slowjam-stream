@@ -6,6 +6,8 @@
   :root {
     @apply theme-dark;
 
+    --radius-control: 4px;
+
     background: transparent;
     font-family: "DIN", sans-serif;
 

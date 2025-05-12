@@ -13,6 +13,7 @@ export type MainState = {
   isWebcamEnabled: boolean;
   holdText: string;
   currentTrack?: TrackData;
+  activity: { id: string; message: string; time: number }[];
 };
 
 const mainActions = {
@@ -62,6 +63,7 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
     defaultState: {
       isWebcamEnabled: false,
       holdText: "STARTING SOON",
+      activity: [],
     },
     actions: mainActions,
     onReady: () => {
@@ -87,7 +89,24 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
         });
 
         //start bot
-        startBot();
+        startBot({
+          onFollow: (userName) => {
+            main.state.setState((x) => {
+              x.activity.push({
+                id: Math.random().toString(32).slice(7),
+                message: [
+                  `${userName} followed`,
+                  `${userName} just followed`,
+                  `${userName} is following`,
+                  `${userName} is now following`,
+                  `${userName} just joined`,
+                  `${userName} joined`,
+                ].toSorted((a, b) => Math.random() - 0.5)[0],
+                time: Date.now(),
+              });
+            });
+          },
+        });
       });
     },
   },

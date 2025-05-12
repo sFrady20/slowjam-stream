@@ -1,5 +1,6 @@
 import { PageBackground } from "@/components/page-background";
 import { useApp } from "@/context";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import Webcam from "react-webcam";
 
@@ -19,9 +20,7 @@ export function HomePage() {
       );
       setDeckCam(
         devices.find(
-          (x) =>
-            x.kind === "videoinput" &&
-            x.label.includes("Orbbec Femto Mega RGB Camera"),
+          (x) => x.kind === "videoinput" && x.label.includes("USB 2.0 Camera"),
         ),
       );
     })();
@@ -36,13 +35,19 @@ export function HomePage() {
           videoConstraints={{ deviceId: faceCam.deviceId }}
         />
       )}
-      {deckCam && (
-        <Webcam
-          className="absolute right-10 bottom-3 h-[35vh] w-[35vw] rounded-xl object-cover shadow-[0px_0px_100px_-20px_black]"
-          videoConstraints={{ deviceId: deckCam.deviceId }}
-        />
-      )}
-      <NowPlaying />
+      <div className="absolute top-[2.5vh] right-10 flex h-[95vh] w-[35vw] flex-col">
+        <NowPlaying />
+        <div className="flex-1" />
+        <Activity />
+        {deckCam && (
+          <div className="relative aspect-video h-[35vh] w-[35vw] overflow-hidden rounded-xl shadow-[0px_0px_100px_-20px_black]">
+            <Webcam
+              className="absolute top-0 left-0 h-full w-full translate-x-[20%] translate-y-[20%] scale-[1.5] object-cover"
+              videoConstraints={{ deviceId: deckCam.deviceId }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -52,13 +57,43 @@ function NowPlaying() {
 
   const currentTrack = app((x) => x.state.currentTrack);
 
-  if (!currentTrack) return null;
+  return (
+    <>
+      <AnimatePresence mode="popLayout">
+        {currentTrack && (
+          <motion.div
+            key={currentTrack.id}
+            initial={{ translateX: -32, opacity: 0, scale: 0.98 }}
+            animate={{ translateX: 0, opacity: 1, scale: 1 }}
+            exit={{ translateX: -32, opacity: 0, scale: 0.98 }}
+            className="bg-background/70 flex-col rounded-xl p-6 shadow-[0px_0px_100px_-20px_black] backdrop-blur-lg"
+          >
+            <div className="font-[DIN_Bold] text-[32px]">Now playing</div>
+            <div className="text-[40px]">{currentTrack.title}</div>
+            <div className="text-[32px]">{currentTrack.artist}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+function Activity() {
+  const app = useApp();
+  const activity = app((x) => x.state.activity);
 
   return (
-    <div className="bg-background/70 absolute top-10 right-10 flex w-[35vw] flex-col rounded-xl p-6 shadow-[0px_0px_100px_-20px_black] backdrop-blur-lg">
-      <div className="font-[DIN_Bold] text-[32px]">Now playing</div>
-      <div className="text-[40px]">{currentTrack.title}</div>
-      <div className="text-[32px]">{currentTrack.artist}</div>
+    <div className="my-2 flex flex-col items-end gap-2">
+      {activity.slice(-8).map((x) => (
+        <div
+          key={x.id}
+          className="bg-background/70 inline-block rounded-xl px-2"
+        >
+          <div className="text-right font-[DIN_Bold] text-[32px] text-(--slowjam-color) mix-blend-screen shadow-[0px_0px_100px_-20px_black] backdrop-blur-lg text-shadow-[0px_0px_20px_var(--slowjam-color)]">
+            {x.message}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

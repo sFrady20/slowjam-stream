@@ -12,9 +12,11 @@
         "@journeyapps/sqlcipher": "^5.3.1",
         "@react-three/fiber": "^9.1.2",
         "@tailwindcss/vite": "^4.1.5",
+        "@twurple/api": "^7.3.0",
         "@twurple/auth": "^7.3.0",
         "@twurple/chat": "^7.3.0",
         "@twurple/easy-bot": "^7.3.0",
+        "@twurple/eventsub-ws": "^7.3.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "cors": "^2.8.5",
@@ -387,6 +389,10 @@
     "@twurple/common": ["@twurple/common@7.3.0", "", { "dependencies": { "@d-fischer/shared-utils": "^3.6.1", "klona": "^2.0.4", "tslib": "^2.0.3" } }, "sha512-BGNniY7PBIohxfpRQ1bsOxUaktZcXZOExq8ojCtnsNBVDlchNEX2fYsere03ZwTLd48XBtxsdaUaeQXbx1aXLw=="],
 
     "@twurple/easy-bot": ["@twurple/easy-bot@7.3.0", "", { "dependencies": { "@d-fischer/logger": "^4.2.1", "@d-fischer/shared-utils": "^3.6.1", "@d-fischer/typed-event-emitter": "^3.3.0", "@twurple/api": "7.3.0", "@twurple/auth": "7.3.0", "@twurple/chat": "7.3.0", "@twurple/common": "7.3.0", "tslib": "^2.0.3" } }, "sha512-1K+RXy9UjaDYmq+XykQWGvw5kta26H0/OoYfRKL1UlcLvdjH4PbsDeTRi/lt58w/zRN5qBtMH69K82H3An+WBw=="],
+
+    "@twurple/eventsub-base": ["@twurple/eventsub-base@7.3.0", "", { "dependencies": { "@d-fischer/logger": "^4.2.1", "@d-fischer/shared-utils": "^3.6.1", "@d-fischer/typed-event-emitter": "^3.3.0", "@twurple/api": "7.3.0", "@twurple/auth": "7.3.0", "@twurple/common": "7.3.0", "tslib": "^2.0.3" } }, "sha512-Wc/3qpyFfyvjabk/tQJVjAke+ixp5QWUT7LsuU+kMcCf46jsRQMB3InoXsZMRgX5sD1frBZzxUEJ7ujhxb8Ngw=="],
+
+    "@twurple/eventsub-ws": ["@twurple/eventsub-ws@7.3.0", "", { "dependencies": { "@d-fischer/connection": "^9.0.0", "@d-fischer/logger": "^4.2.1", "@d-fischer/shared-utils": "^3.6.1", "@d-fischer/typed-event-emitter": "^3.3.0", "@twurple/auth": "7.3.0", "@twurple/common": "7.3.0", "@twurple/eventsub-base": "7.3.0", "tslib": "^2.0.3" }, "peerDependencies": { "@twurple/api": "7.3.0" } }, "sha512-jtIMdW/atTrn5Eo3XGS8Lw0EIsK3GQsZGJDLYRwqw2bCV8ZnQoZ8YaXUJb5Wd+gebUfeBr4j7mvZlGc+Wkp17w=="],
 
     "@types/babel__core": ["@types/babel__core@7.20.5", "", { "dependencies": { "@babel/parser": "^7.20.7", "@babel/types": "^7.20.7", "@types/babel__generator": "*", "@types/babel__template": "*", "@types/babel__traverse": "*" } }, "sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA=="],
 
