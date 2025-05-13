@@ -17,10 +17,14 @@ export type MainState = {
   holdText: string;
   currentTrack?: TrackData;
   streamData?: HelixStream;
-  visualizerOpacity: number;
-  visualizerBlendMode: string;
-  visualizerVideoUrl?: string;
   activity: { id: string; message: string; time: number }[];
+  visualizer: {
+    opacity: number;
+    blendMode: string;
+    videoUrl?: string;
+    speed: number;
+    matchBpm: boolean;
+  };
 };
 
 const mainActions = {
@@ -54,14 +58,13 @@ const mainActions = {
   },
 
   async updateVisualizer(
-    videoUrl: string | undefined,
-    opacity: number,
-    blendMode: string,
+    updates: Partial<typeof main.defaultState.visualizer>,
   ) {
     main.state.setState((x) => {
-      x.visualizerOpacity = opacity;
-      x.visualizerVideoUrl = videoUrl;
-      x.visualizerBlendMode = blendMode;
+      x.visualizer = {
+        ...x.visualizer,
+        ...updates,
+      };
     });
   },
 
@@ -75,6 +78,7 @@ const mainActions = {
       id: x.id,
       thumbnail: (x.videos.medium as any).thumbnail as string,
       video: x.videos.medium.url as any as string,
+      tags: x.tags,
     }));
 
     return videos;
@@ -97,9 +101,13 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
     defaultState: {
       isWebcamEnabled: false,
       holdText: "STARTING SOON",
-      visualizerOpacity: 0,
-      visualizerBlendMode: "screen",
       activity: [],
+      visualizer: {
+        opacity: 0,
+        blendMode: "screen",
+        speed: 1,
+        matchBpm: true,
+      },
     },
     actions: mainActions,
     onReady: async () => {

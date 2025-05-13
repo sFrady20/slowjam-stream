@@ -4,6 +4,13 @@ import { Button } from "earthling-ui/button";
 import { Input } from "earthling-ui/input";
 import { TextArea } from "earthling-ui/textarea";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "earthling-ui/accordion";
+import { Switch } from "earthling-ui/switch";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -71,7 +78,7 @@ export default function ControllerPage() {
 const visualizerState = create<{
   query: string;
   page: number;
-  videos: { id: number; thumbnail: string; video: string }[];
+  videos: { id: number; thumbnail: string; video: string; tags: string }[];
   isLoading: boolean;
   error: string | null;
 }>(() => ({
@@ -85,9 +92,9 @@ const visualizerState = create<{
 const VisualizerPage = () => {
   const app = useApp();
 
-  const opacity = app((x) => x.state.visualizerOpacity);
-  const blendMode = app((x) => x.state.visualizerBlendMode);
-  const selectedVideoUrl = app((x) => x.state.visualizerVideoUrl);
+  const { opacity, blendMode, videoUrl, speed, matchBpm } = app(
+    (x) => x.state.visualizer,
+  );
 
   const videos = visualizerState((x) => x.videos);
   const query = visualizerState((x) => x.query);
@@ -119,47 +126,68 @@ const VisualizerPage = () => {
 
   return (
     <>
-      <div className="bg-background/70 sticky top-0 -mx-6 flex flex-col gap-4 p-6 backdrop-blur-lg">
-        <div className="flex flex-row gap-2">
-          <Slider
-            value={[opacity]}
-            onValueChange={(v) => {
-              clientAction(
-                "updateVisualizer",
-                selectedVideoUrl,
-                v[0],
-                blendMode,
-              );
-            }}
-          />
-          <Select
-            value={blendMode}
-            onValueChange={(v) => {
-              clientAction("updateVisualizer", selectedVideoUrl, opacity, v);
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="normal">Normal</SelectItem>
-              <SelectItem value="multiply">Multiply</SelectItem>
-              <SelectItem value="screen">Screen</SelectItem>
-              <SelectItem value="overlay">Overlay</SelectItem>
-              <SelectItem value="darken">Darken</SelectItem>
-              <SelectItem value="lighten">Lighten</SelectItem>
-              <SelectItem value="color-dodge">Color Dodge</SelectItem>
-              <SelectItem value="color-burn">Color Burn</SelectItem>
-              <SelectItem value="hard-light">Hard Light</SelectItem>
-              <SelectItem value="soft-light">Soft Light</SelectItem>
-              <SelectItem value="difference">Difference</SelectItem>
-              <SelectItem value="exclusion">Exclusion</SelectItem>
-              <SelectItem value="hue">Hue</SelectItem>
-              <SelectItem value="saturation">Saturation</SelectItem>
-              <SelectItem value="color">Color</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="flex flex-col">
+        <div className="flex flex-col">
+          Opacity
+          <div className="flex flex-row gap-2">
+            <Slider
+              value={[opacity]}
+              onValueChange={(v) => {
+                clientAction("updateVisualizer", { opacity: v[0] });
+              }}
+            />
+            <Select
+              value={blendMode}
+              onValueChange={(value) => {
+                clientAction("updateVisualizer", { blendMode: value });
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="normal">Normal</SelectItem>
+                <SelectItem value="multiply">Multiply</SelectItem>
+                <SelectItem value="screen">Screen</SelectItem>
+                <SelectItem value="overlay">Overlay</SelectItem>
+                <SelectItem value="darken">Darken</SelectItem>
+                <SelectItem value="lighten">Lighten</SelectItem>
+                <SelectItem value="color-dodge">Color Dodge</SelectItem>
+                <SelectItem value="color-burn">Color Burn</SelectItem>
+                <SelectItem value="hard-light">Hard Light</SelectItem>
+                <SelectItem value="soft-light">Soft Light</SelectItem>
+                <SelectItem value="difference">Difference</SelectItem>
+                <SelectItem value="exclusion">Exclusion</SelectItem>
+                <SelectItem value="hue">Hue</SelectItem>
+                <SelectItem value="saturation">Saturation</SelectItem>
+                <SelectItem value="color">Color</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+        <div className="flex flex-col">
+          Speed
+          <div className="flex flex-row gap-2">
+            <Slider
+              min={0.1}
+              max={2}
+              step={0.01}
+              value={[speed]}
+              onValueChange={(v) => {
+                clientAction("updateVisualizer", { speed: v[0] });
+              }}
+            />
+            <Switch
+              //@ts-ignore
+              checked={matchBpm}
+              onCheckedChange={(v) => {
+                clientAction("updateVisualizer", { matchBpm: v });
+              }}
+            ></Switch>
+          </div>
+        </div>
+      </div>
+      <div className="bg-background/70 sticky top-0 -mx-6 flex flex-col gap-4 px-6 py-4 backdrop-blur-lg">
         <div className="flex flex-row gap-2">
           <Input
             className="flex-1"
@@ -178,42 +206,40 @@ const VisualizerPage = () => {
           </Button>
         </div>
         {error && <div className="text-sm text-red-500">{error}</div>}
-      </div>
-      <div className="flex flex-row items-center justify-end gap-2">
-        <Button
-          onClick={() => {
-            fetchVideos(page - 1);
-          }}
-          disabled={page === 1}
-        >
-          Previous
-        </Button>
-        <div className="text-sm text-gray-500">Page {page}</div>
-        <Button
-          onClick={() => {
-            visualizerState.setState({ page: page + 1 });
-            fetchVideos(page + 1);
-          }}
-        >
-          Next
-        </Button>
+        <div className="flex flex-row items-center justify-between gap-2">
+          <Button
+            onClick={() => {
+              fetchVideos(page - 1);
+            }}
+            disabled={page === 1}
+          >
+            Previous
+          </Button>
+          <div className="text-sm text-gray-500">Page {page}</div>
+          <Button
+            onClick={() => {
+              visualizerState.setState({ page: page + 1 });
+              fetchVideos(page + 1);
+            }}
+          >
+            Next
+          </Button>
+        </div>
       </div>
       <div className="grid grid-cols-12 gap-2">
         {videos?.map((x) => (
           <img
             key={x.id}
             src={x.thumbnail}
+            title={x.tags}
             className={cn(
               "col-span-3 aspect-video md:col-span-2 xl:col-span-1",
-              selectedVideoUrl === x.video && "ring-2",
+              videoUrl === x.video && "ring-2",
             )}
             onClick={() => {
-              clientAction(
-                "updateVisualizer",
-                selectedVideoUrl === x.video ? undefined : x.video,
-                opacity,
-                blendMode,
-              );
+              clientAction("updateVisualizer", {
+                videoUrl: videoUrl === x.video ? undefined : x.video,
+              });
             }}
           />
         ))}

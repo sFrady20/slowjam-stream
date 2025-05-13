@@ -102,7 +102,7 @@ function Activity() {
 export default function Visualizer() {
   const app = useApp();
 
-  const videoUrl = app((x) => x.state.visualizerVideoUrl);
+  const { videoUrl } = app((x) => x.state.visualizer);
 
   return (
     <AnimatePresence mode="popLayout">
@@ -117,14 +117,16 @@ export function BpmVideo({ videoUrl }: { videoUrl: string }) {
   const app = useApp();
 
   const bpm = app((x) => x.state.currentTrack?.bpm);
-  const opacity = app((x) => x.state.visualizerOpacity);
-  const blendMode = app((x) => x.state.visualizerBlendMode);
+  const { opacity, blendMode, speed, matchBpm } = app(
+    (x) => x.state.visualizer,
+  );
 
   useEffect(() => {
     if (!ref.current) return;
-    ref.current.playbackRate = bpm ? Math.pow(bpm / 128, 1.2) : 1;
-    console.log("playbackRate", ref.current.playbackRate);
-  }, [bpm]);
+    ref.current.playbackRate = matchBpm
+      ? (bpm ? Math.pow(bpm / 128, 1.2) : 1) * speed
+      : speed;
+  }, [bpm, speed, matchBpm]);
 
   return (
     <>
