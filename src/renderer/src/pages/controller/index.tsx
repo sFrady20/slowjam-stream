@@ -1,10 +1,19 @@
 import { useApp } from "@/context";
 import { clientAction } from "@/services/socket";
 import { Button } from "earthling-ui/button";
+import { Input } from "earthling-ui/input";
 import { TextArea } from "earthling-ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "earthling-ui/select";
 import { Slider } from "earthling-ui/slider";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/utils/cn";
+import { create } from "zustand";
 
 export default function ControllerPage() {
   const app = useApp();
@@ -59,38 +68,143 @@ export default function ControllerPage() {
   );
 }
 
+const visualizerState = create<{
+  query: string;
+  page: number;
+  videos: { id: number; thumbnail: string; video: string }[];
+  isLoading: boolean;
+  error: string | null;
+}>(() => ({
+  query: "vj loops",
+  page: 1,
+  videos: [],
+  isLoading: false,
+  error: null,
+}));
+
 const VisualizerPage = () => {
   const app = useApp();
 
-  const images = app((x) => x.state.vjLoops);
   const opacity = app((x) => x.state.visualizerOpacity);
+  const blendMode = app((x) => x.state.visualizerBlendMode);
   const selectedVideoUrl = app((x) => x.state.visualizerVideoUrl);
-  const currentTrack = app((x) => x.state.currentTrack);
+
+  const videos = visualizerState((x) => x.videos);
+  const query = visualizerState((x) => x.query);
+  const page = visualizerState((x) => x.page);
+  const isLoading = visualizerState((x) => x.isLoading);
+  const error = visualizerState((x) => x.error);
+
+  const fetchVideos = useCallback(
+    async (page: number) => {
+      if (visualizerState.getState().isLoading) return;
+      visualizerState.setState({ isLoading: true, error: null, page });
+
+      try {
+        const videos = await clientAction("fetchVideos", query, page);
+        visualizerState.setState({ videos, isLoading: false, error: null });
+      } catch (error: any) {
+        visualizerState.setState({
+          isLoading: false,
+          error: error.message,
+        });
+      }
+    },
+    [query],
+  );
+
+  useEffect(() => {
+    fetchVideos(1);
+  }, []);
 
   return (
     <>
-      <div className="bg-background/70 sticky top-0 -mx-6 p-6 backdrop-blur-lg">
-        <Slider
-          value={[opacity]}
-          onValueChange={(v) => {
-            clientAction("updateVisualizer", selectedVideoUrl, v[0]);
-          }}
-        />
-        <div className="mt-2">
-          {currentTrack?.bpm
-            ? Math.pow(currentTrack.bpm / 128, 1.2).toLocaleString("en-US", {
-                maximumFractionDigits: 1.3,
-              })
-            : "No track"}
+      <div className="bg-background/70 sticky top-0 -mx-6 flex flex-col gap-4 p-6 backdrop-blur-lg">
+        <div className="flex flex-row gap-2">
+          <Slider
+            value={[opacity]}
+            onValueChange={(v) => {
+              clientAction(
+                "updateVisualizer",
+                selectedVideoUrl,
+                v[0],
+                blendMode,
+              );
+            }}
+          />
+          <Select
+            value={blendMode}
+            onValueChange={(v) => {
+              clientAction("updateVisualizer", selectedVideoUrl, opacity, v);
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="normal">Normal</SelectItem>
+              <SelectItem value="multiply">Multiply</SelectItem>
+              <SelectItem value="screen">Screen</SelectItem>
+              <SelectItem value="overlay">Overlay</SelectItem>
+              <SelectItem value="darken">Darken</SelectItem>
+              <SelectItem value="lighten">Lighten</SelectItem>
+              <SelectItem value="color-dodge">Color Dodge</SelectItem>
+              <SelectItem value="color-burn">Color Burn</SelectItem>
+              <SelectItem value="hard-light">Hard Light</SelectItem>
+              <SelectItem value="soft-light">Soft Light</SelectItem>
+              <SelectItem value="difference">Difference</SelectItem>
+              <SelectItem value="exclusion">Exclusion</SelectItem>
+              <SelectItem value="hue">Hue</SelectItem>
+              <SelectItem value="saturation">Saturation</SelectItem>
+              <SelectItem value="color">Color</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+        <div className="flex flex-row gap-2">
+          <Input
+            className="flex-1"
+            value={query}
+            onChange={(e) =>
+              visualizerState.setState({ query: e.target.value })
+            }
+          />
+          <Button
+            onClick={() => {
+              fetchVideos(1);
+            }}
+          >
+            {isLoading && <i className="icon-[svg-spinners--ring-resize]" />}
+            Search
+          </Button>
+        </div>
+        {error && <div className="text-sm text-red-500">{error}</div>}
       </div>
-      <div className="grid grid-cols-4 gap-2">
-        {images?.map((x) => (
+      <div className="flex flex-row items-center justify-end gap-2">
+        <Button
+          onClick={() => {
+            fetchVideos(page - 1);
+          }}
+          disabled={page === 1}
+        >
+          Previous
+        </Button>
+        <div className="text-sm text-gray-500">Page {page}</div>
+        <Button
+          onClick={() => {
+            visualizerState.setState({ page: page + 1 });
+            fetchVideos(page + 1);
+          }}
+        >
+          Next
+        </Button>
+      </div>
+      <div className="grid grid-cols-12 gap-2">
+        {videos?.map((x) => (
           <img
             key={x.id}
             src={x.thumbnail}
             className={cn(
-              "aspect-video",
+              "col-span-3 aspect-video md:col-span-2 xl:col-span-1",
               selectedVideoUrl === x.video && "ring-2",
             )}
             onClick={() => {
@@ -98,6 +212,7 @@ const VisualizerPage = () => {
                 "updateVisualizer",
                 selectedVideoUrl === x.video ? undefined : x.video,
                 opacity,
+                blendMode,
               );
             }}
           />

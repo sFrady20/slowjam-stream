@@ -118,6 +118,7 @@ export function BpmVideo({ videoUrl }: { videoUrl: string }) {
 
   const bpm = app((x) => x.state.currentTrack?.bpm);
   const opacity = app((x) => x.state.visualizerOpacity);
+  const blendMode = app((x) => x.state.visualizerBlendMode);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -132,9 +133,10 @@ export function BpmVideo({ videoUrl }: { videoUrl: string }) {
         src={videoUrl}
         initial={{ opacity: 0, scale: 1 }}
         animate={{ opacity: opacity / 100, scale: 1 }}
-        exit={{ opacity: 0, scale: 10 }}
+        exit={{ opacity: 0, scale: 7 }}
         transition={{ duration: 1 }}
-        className="absolute top-0 left-0 h-full w-full object-cover mix-blend-screen"
+        className="absolute top-0 left-0 h-full w-full object-cover"
+        style={{ mixBlendMode: blendMode as any }}
         muted
         autoPlay
         loop

@@ -3,16 +3,10 @@ import { startBot } from "./lib/bot";
 import { RekordBox, TrackData } from "./lib/now-playing";
 import Main from "./main";
 import { OBSWebSocket } from "obs-websocket-js";
-import pixabay from "pixabay-api";
+import { searchVideos } from "pixabay-api";
 import { env } from "./lib/env";
 
 const obs = new OBSWebSocket();
-
-type VJLoop = {
-  id: number;
-  thumbnail: string;
-  video: string;
-};
 
 export type MainConfig = {
   styles?: Record<string, string>;
@@ -23,8 +17,8 @@ export type MainState = {
   holdText: string;
   currentTrack?: TrackData;
   streamData?: HelixStream;
-  vjLoops?: VJLoop[];
   visualizerOpacity: number;
+  visualizerBlendMode: string;
   visualizerVideoUrl?: string;
   activity: { id: string; message: string; time: number }[];
 };
@@ -59,11 +53,31 @@ const mainActions = {
     await obs.call("SetCurrentProgramScene", { sceneName: "Hold" });
   },
 
-  async updateVisualizer(videoUrl: string | undefined, opacity: number) {
+  async updateVisualizer(
+    videoUrl: string | undefined,
+    opacity: number,
+    blendMode: string,
+  ) {
     main.state.setState((x) => {
       x.visualizerOpacity = opacity;
       x.visualizerVideoUrl = videoUrl;
+      x.visualizerBlendMode = blendMode;
     });
+  },
+
+  async fetchVideos(query: string, page: number) {
+    const videos = (
+      await searchVideos(env.PIXABAY_API_KEY, query, {
+        page: page,
+        per_page: 100,
+      })
+    ).hits.map((x) => ({
+      id: x.id,
+      thumbnail: (x.videos.medium as any).thumbnail as string,
+      video: x.videos.medium.url as any as string,
+    }));
+
+    return videos;
   },
 } as const;
 
@@ -84,6 +98,7 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
       isWebcamEnabled: false,
       holdText: "STARTING SOON",
       visualizerOpacity: 0,
+      visualizerBlendMode: "screen",
       activity: [],
     },
     actions: mainActions,
@@ -134,28 +149,6 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
           });
         },
       });
-
-      //get pixabay images
-      console.log("getting pixabay videos");
-      try {
-        const items: VJLoop[] = (
-          await pixabay.searchVideos(env.PIXABAY_API_KEY, "vj loops", {
-            per_page: 200,
-          })
-        ).hits.map(({ id, videos }) => ({
-          id,
-          thumbnail: (videos.medium as any).thumbnail as string,
-          video: videos.medium.url as any as string,
-        }));
-
-        console.log(`found ${items.length} vj loops`);
-
-        main.state.setState((x) => {
-          x.vjLoops = items;
-        });
-      } catch (e: any) {
-        console.error("error getting pixabay videos:", e.response.data);
-      }
     },
   },
 );
