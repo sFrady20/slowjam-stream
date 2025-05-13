@@ -196,7 +196,7 @@ export default class Main<
 
   private _registerActions() {
     this._io?.on("connection", (socket) => {
-      console.log("connected");
+      // console.log("connected");
 
       Object.entries(this._actions).forEach(([key, value]) => {
         socket.on(key, async (args, callback) => {
@@ -205,7 +205,7 @@ export default class Main<
       });
 
       socket.on("disconnect", () => {
-        console.log("disconnected");
+        // console.log("disconnected");
       });
     });
   }
@@ -226,7 +226,7 @@ export default class Main<
 
     // Create the browser window.
     const window = new BrowserWindow({
-      width: bounds.width,
+      width: 535,
       height: bounds.height,
       x: bounds.x,
       y: bounds.y,
@@ -257,7 +257,7 @@ export default class Main<
 
     if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
       await window.loadURL(process.env["ELECTRON_RENDERER_URL"]!);
-      window.webContents.openDevTools();
+      // window.webContents.openDevTools();
     } else {
       await window.loadURL(`http://localhost:${PORT}/`);
     }
