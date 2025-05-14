@@ -129,20 +129,18 @@ export function BpmVideo({ videoUrl }: { videoUrl: string }) {
   }, [bpm, speed, matchBpm]);
 
   return (
-    <>
-      <motion.video
-        ref={ref}
-        src={videoUrl}
-        initial={{ opacity: 0, scale: 1 }}
-        animate={{ opacity: opacity / 100, scale: 1 }}
-        exit={{ opacity: 0, scale: 7 }}
-        transition={{ duration: 1 }}
-        className="absolute top-0 left-0 h-full w-full object-cover"
-        style={{ mixBlendMode: blendMode as any }}
-        muted
-        autoPlay
-        loop
-      />
-    </>
+    <motion.video
+      ref={ref}
+      src={videoUrl}
+      initial={{ opacity: 0, scale: 2 }}
+      animate={{ opacity: opacity / 100, scale: 1 }}
+      exit={{ opacity: 0, scale: 2 }}
+      transition={{ duration: 1 }}
+      className="absolute top-0 left-0 h-full w-full object-cover"
+      style={{ mixBlendMode: blendMode as any }}
+      muted
+      autoPlay
+      loop
+    />
   );
 }

@@ -21,7 +21,7 @@ export type MainState = {
   visualizer: {
     opacity: number;
     blendMode: string;
-    videoUrl?: string;
+    videoUrl: string | null;
     speed: number;
     matchBpm: boolean;
   };
@@ -105,6 +105,7 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
       visualizer: {
         opacity: 0,
         blendMode: "screen",
+        videoUrl: null,
         speed: 1,
         matchBpm: true,
       },

@@ -3,12 +3,6 @@ import { clientAction } from "@/services/socket";
 import { Button } from "earthling-ui/button";
 import { Input } from "earthling-ui/input";
 import { TextArea } from "earthling-ui/textarea";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "earthling-ui/accordion";
 import { Switch } from "earthling-ui/switch";
 import {
   Select,
@@ -82,7 +76,7 @@ const visualizerState = create<{
   isLoading: boolean;
   error: string | null;
 }>(() => ({
-  query: "vj loops",
+  query: "dance",
   page: 1,
   videos: [],
   isLoading: false,
@@ -215,7 +209,21 @@ const VisualizerPage = () => {
           >
             Previous
           </Button>
-          <div className="text-sm text-gray-500">Page {page}</div>
+          <div className="grid grid-cols-9 gap-1">
+            {new Array(9).fill("").map((_, i) => (
+              <Button
+                scheme={"secondary"}
+                aria-pressed={page === i + 1}
+                key={i}
+                onClick={() => {
+                  visualizerState.setState({ page: i + 1 });
+                  fetchVideos(i + 1);
+                }}
+              >
+                {i + 1}
+              </Button>
+            ))}
+          </div>
           <Button
             onClick={() => {
               visualizerState.setState({ page: page + 1 });
@@ -233,12 +241,12 @@ const VisualizerPage = () => {
             src={x.thumbnail}
             title={x.tags}
             className={cn(
-              "col-span-3 aspect-video md:col-span-2 xl:col-span-1",
+              "col-span-3 aspect-video cursor-pointer md:col-span-2 xl:col-span-1",
               videoUrl === x.video && "ring-2",
             )}
             onClick={() => {
               clientAction("updateVisualizer", {
-                videoUrl: videoUrl === x.video ? undefined : x.video,
+                videoUrl: videoUrl === x.video ? null : x.video,
               });
             }}
           />
