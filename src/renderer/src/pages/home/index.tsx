@@ -1,7 +1,8 @@
+import { Activity } from "@/components/activity";
+import { NowPlaying } from "@/components/now-playing";
 import { PageBackground } from "@/components/page-background";
-import { useApp } from "@/context";
-import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import Visualizer from "@/components/visualizer";
+import { useEffect, useState } from "react";
 import Webcam from "react-webcam";
 
 export function HomePage() {
@@ -49,98 +50,9 @@ export function HomePage() {
         )}
       </div>
       <Visualizer />
+      <div className="absolute bottom-5 left-130 font-[DIN_Black] text-[40px] tracking-[-.05rem] text-(--slowjam-color) mix-blend-screen text-shadow-[0px_0px_20px_var(--slowjam-color)]">
+        @SLOWJAMSTEVE
+      </div>
     </div>
-  );
-}
-
-function NowPlaying() {
-  const app = useApp();
-
-  const currentTrack = app((x) => x.state.currentTrack);
-
-  return (
-    <>
-      <AnimatePresence mode="popLayout">
-        {currentTrack && (
-          <motion.div
-            key={currentTrack.id}
-            initial={{ translateX: -32, opacity: 0, scale: 0.98 }}
-            animate={{ translateX: 0, opacity: 1, scale: 1 }}
-            exit={{ translateX: -32, opacity: 0, scale: 0.98 }}
-            className="bg-background/70 flex-col rounded-xl p-6 shadow-[0px_0px_100px_-20px_black] backdrop-blur-lg text-shadow-[0px_0px_20px_var(--color-foreground)]"
-          >
-            <div className="font-[DIN_Bold] text-[32px]">Now playing</div>
-            <div className="text-[40px]">{currentTrack.title}</div>
-            <div className="text-[32px]">{currentTrack.artist}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
-}
-
-function Activity() {
-  const app = useApp();
-  const activity = app((x) => x.state.activity);
-
-  return (
-    <div className="my-2 flex flex-col items-end gap-2">
-      {activity.slice(-8).map((x) => (
-        <div
-          key={x.id}
-          className="bg-background/70 inline-block rounded-xl px-2"
-        >
-          <div className="text-foreground text-right font-[DIN_Bold] text-[32px] mix-blend-screen shadow-[0px_0px_100px_-20px_black] backdrop-blur-lg text-shadow-[0px_0px_13px_var(--color-foreground)]">
-            {x.message}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export default function Visualizer() {
-  const app = useApp();
-
-  const { videoUrl } = app((x) => x.state.visualizer);
-
-  return (
-    <AnimatePresence mode="popLayout">
-      {videoUrl && <BpmVideo key={videoUrl} videoUrl={videoUrl} />}
-    </AnimatePresence>
-  );
-}
-
-export function BpmVideo({ videoUrl }: { videoUrl: string }) {
-  const ref = useRef<HTMLVideoElement>(null);
-
-  const app = useApp();
-
-  const bpm = app((x) => x.state.currentTrack?.bpm);
-  const { opacity, blendMode, speed, matchBpm } = app(
-    (x) => x.state.visualizer,
-  );
-
-  useEffect(() => {
-    if (!ref.current) return;
-    ref.current.playbackRate = matchBpm
-      ? (bpm ? Math.pow(bpm / 128, 1.2) : 1) * speed
-      : speed;
-  }, [bpm, speed, matchBpm]);
-
-  return (
-    <motion.video
-      ref={ref}
-      src={videoUrl}
-      initial={{ opacity: 0, scale: 2 }}
-      animate={{ opacity: opacity / 100, scale: 1 }}
-      exit={{ opacity: 0, scale: 2 }}
-      transition={{ duration: 1 }}
-      className="absolute top-0 left-0 h-full w-full object-cover"
-      style={{ mixBlendMode: blendMode as any }}
-      muted
-      autoPlay
-      loop
-    />
   );
 }

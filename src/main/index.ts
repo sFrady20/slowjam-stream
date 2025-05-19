@@ -25,6 +25,7 @@ export type MainState = {
     speed: number;
     matchBpm: boolean;
   };
+  drinkChances: number;
 };
 
 const mainActions = {
@@ -109,6 +110,7 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
         speed: 1,
         matchBpm: true,
       },
+      drinkChances: 0.25,
     },
     actions: mainActions,
     onReady: async () => {

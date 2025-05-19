@@ -21,7 +21,9 @@ export default function ControllerPage() {
 
   const streamData = app((x) => x.state.streamData);
 
-  const [page, setPage] = useState<"stream" | "visualizer" | "games">("stream");
+  const [page, setPage] = useState<"stream" | "visualizer" | "spinner">(
+    "stream",
+  );
 
   return (
     <div className="bg-background flex flex-1 flex-col gap-4 p-6">
@@ -41,6 +43,14 @@ export default function ControllerPage() {
           className="flex-1"
         >
           Visualizer
+        </Button>
+        <Button
+          scheme={"secondary"}
+          aria-pressed={page === "spinner"}
+          onClick={() => setPage("spinner")}
+          className="flex-1"
+        >
+          Spinner
         </Button>
       </div>
       {page === "stream" && (
@@ -65,6 +75,7 @@ export default function ControllerPage() {
         </div>
       )}
       {page === "visualizer" && <VisualizerPage />}
+      {page === "spinner" && <SpinnerPage />}
     </div>
   );
 }
@@ -274,5 +285,14 @@ const ApplyHoldTool = function () {
         Apply Hold
       </Button>
     </>
+  );
+};
+
+const SpinnerPage = () => {
+  return (
+    <div className="flex flex-col gap-2">
+      <div>Drink Chances</div>
+      <Slider />
+    </div>
   );
 };
