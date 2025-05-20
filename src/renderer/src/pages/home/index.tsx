@@ -28,20 +28,20 @@ export function HomePage() {
   }, []);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center">
-      <PageBackground />
+    <div className="bg-background fixed inset-0 flex items-center justify-center">
+      {/* <PageBackground /> */}
       {faceCam && (
         <Webcam
-          className="absolute top-15 left-10 h-[90vh] w-[70vw] rounded-xl object-cover shadow-[0px_0px_100px_-20px_black]"
+          className="absolute top-[32px] left-[32px] aspect-video h-[calc(100%-64px)] w-[calc(100%-64px-650px-32px)] rounded-xl object-cover shadow-[0px_0px_100px_-20px_black]"
           videoConstraints={{ deviceId: faceCam.deviceId }}
         />
       )}
-      <div className="absolute top-[2.5vh] right-10 flex h-[95vh] w-[35vw] flex-col">
+      <div className="absolute top-[32px] right-[32px] flex h-[calc(100%-64px)] w-[650px] flex-col">
         <NowPlaying />
         <div className="flex-1" />
         <Activity />
         {deckCam && (
-          <div className="relative aspect-video h-[35vh] w-[35vw] overflow-hidden rounded-xl shadow-[0px_0px_100px_-20px_black]">
+          <div className="relative aspect-video w-full overflow-hidden rounded-xl shadow-[0px_0px_100px_-20px_black]">
             <Webcam
               className="absolute top-0 left-0 h-full w-full translate-x-[20%] translate-y-[20%] scale-[1.5] object-cover"
               videoConstraints={{ deviceId: deckCam.deviceId }}
@@ -50,7 +50,7 @@ export function HomePage() {
         )}
       </div>
       <Visualizer />
-      <div className="absolute bottom-5 left-130 font-[DIN_Black] text-[40px] tracking-[-.05rem] text-(--slowjam-color) mix-blend-screen text-shadow-[0px_0px_20px_var(--slowjam-color)]">
+      <div className="bg-background absolute bottom-0 left-100 overflow-hidden rounded-t-xl px-8 font-[DIN_Black] text-[40px] tracking-[-.05rem] text-white text-shadow-[0px_0px_20px_white]">
         @SLOWJAMSTEVE
       </div>
     </div>
