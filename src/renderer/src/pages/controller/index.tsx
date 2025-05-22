@@ -289,6 +289,10 @@ const ApplyHoldTool = function () {
 };
 
 const SpinnerPage = () => {
+  const app = useApp();
+
+  const drinkChances = app((x) => x.state.drinkChances);
+
   return (
     <div className="flex flex-col gap-2">
       <div>Drink Chances</div>

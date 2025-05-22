@@ -1,6 +1,5 @@
 import { Activity } from "@/components/activity";
 import { NowPlaying } from "@/components/now-playing";
-import { PageBackground } from "@/components/page-background";
 import Visualizer from "@/components/visualizer";
 import { useEffect, useState } from "react";
 import Webcam from "react-webcam";
@@ -36,9 +35,8 @@ export function HomePage() {
           videoConstraints={{ deviceId: faceCam.deviceId }}
         />
       )}
-      <div className="absolute top-[32px] right-[32px] flex h-[calc(100%-64px)] w-[650px] flex-col">
+      <div className="absolute top-[32px] right-[32px] flex h-[calc(100%-64px)] w-[650px] flex-col justify-end">
         <NowPlaying />
-        <div className="flex-1" />
         <Activity />
         {deckCam && (
           <div className="relative aspect-video w-full overflow-hidden rounded-xl shadow-[0px_0px_100px_-20px_black]">
