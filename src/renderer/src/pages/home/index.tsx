@@ -1,5 +1,6 @@
 import { Activity } from "@/components/activity";
 import { NowPlaying } from "@/components/now-playing";
+import { StreamStatus } from "@/components/stream-status";
 import Visualizer from "@/components/visualizer";
 import { useEffect, useState } from "react";
 import Webcam from "react-webcam";
@@ -27,7 +28,7 @@ export function HomePage() {
   }, []);
 
   return (
-    <div className="bg-background fixed inset-0 flex items-center justify-center">
+    <div className="bg-background fixed inset-0 flex items-center justify-center text-shadow-[0px_0px_20px_white]">
       {/* <PageBackground /> */}
       {faceCam && (
         <Webcam
@@ -36,8 +37,9 @@ export function HomePage() {
         />
       )}
       <div className="absolute top-[32px] right-[32px] flex h-[calc(100%-64px)] w-[650px] flex-col justify-end">
-        <NowPlaying />
+        <StreamStatus />
         <Activity />
+        <NowPlaying />
         {deckCam && (
           <div className="relative aspect-video w-full overflow-hidden rounded-xl shadow-[0px_0px_100px_-20px_black]">
             <Webcam

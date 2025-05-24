@@ -15,6 +15,7 @@ import { Slider } from "earthling-ui/slider";
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/utils/cn";
 import { create } from "zustand";
+import { StreamStatus } from "@/components/stream-status";
 
 export default function ControllerPage() {
   const app = useApp();
@@ -27,6 +28,7 @@ export default function ControllerPage() {
 
   return (
     <div className="bg-background flex flex-1 flex-col gap-4 p-6">
+      <StreamStatus />
       <div className="flex flex-row gap-2">
         <Button
           scheme={"secondary"}

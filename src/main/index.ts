@@ -5,6 +5,7 @@ import Main from "./main";
 import { OBSWebSocket } from "obs-websocket-js";
 import { searchVideos } from "pixabay-api";
 import { env } from "./lib/env";
+import { DateTime } from "luxon";
 
 const obs = new OBSWebSocket();
 
@@ -26,6 +27,10 @@ export type MainState = {
     matchBpm: boolean;
   };
   drinkChances: number;
+  stream: {
+    isActive: boolean;
+    timeStarted?: number;
+  };
 };
 
 const mainActions = {
@@ -84,6 +89,17 @@ const mainActions = {
 
     return videos;
   },
+
+  async setLive(live: boolean) {
+    await obs.call(live ? "StartStream" : "StopStream");
+  },
+
+  async setMusicMuted(muted: boolean) {
+    await obs.call("SetInputMute", {
+      inputName: "Rekordbox Audio",
+      inputMuted: muted,
+    });
+  },
 } as const;
 
 //called from client to main
@@ -111,6 +127,9 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
         matchBpm: true,
       },
       drinkChances: 0.25,
+      stream: {
+        isActive: false,
+      },
     },
     actions: mainActions,
     onReady: async () => {
@@ -136,6 +155,25 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
         main.io.emit("updateState", x);
       });
 
+      async function fetchStreamInfo() {
+        const stream = await obs.call("GetStreamStatus");
+
+        if (stream.outputTimecode) {
+          const time = DateTime.from(stream.outputTimecode);
+          main.state.setState((x) => {
+            x.stream.timeStarted = time.toMillis();
+          });
+        }
+      }
+
+      fetchStreamInfo();
+      obs.on("StreamStateChanged", ({ outputActive }) => {
+        main.state.setState((x) => {
+          x.stream.isActive = outputActive;
+        });
+        if (outputActive) fetchStreamInfo();
+      });
+
       //start bot
       startBot({
         onStreamData: (streamData) => {
@@ -147,14 +185,9 @@ const main = new Main<MainConfig, MainSettings, MainState, MainActions>(
           main.state.setState((x) => {
             x.activity.push({
               id: Math.random().toString(32).slice(7),
-              message: [
-                `${userName} followed`,
-                `${userName} just followed`,
-                `${userName} is following`,
-                `${userName} is now following`,
-                `${userName} just joined`,
-                `${userName} joined`,
-              ].toSorted((a, b) => Math.random() - 0.5)[0],
+              message: [`${userName} Followed`].toSorted(
+                (a, b) => Math.random() - 0.5,
+              )[0],
               time: Date.now(),
             });
           });
